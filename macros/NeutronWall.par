@@ -1,0 +1,53 @@
+# Neutron detector wall parameter file
+
+worldSize  d  5000 # mm
+
+numTimeBuckets      i  512
+numTimeBucketsLite  i  128
+
+numWalls  i  3
+# 0th Wall ========================
+  numDetectors0  i  24
+nameOfMaterial0  s  G4_POLYETHYLENE
+    axisNormal0  s  z
+   axisReadout0  s  y
+   numReadouts0  i  2
+     xDetector0  d  -876.3    # mm (first detector position)
+     yDetector0  d  0         # mm
+     zDetector0  d  1000      # mm
+    dxDetector0  d  76.2      # mm (detector spacing)
+    dyDetector0  d  0         # mm
+    dzDetector0  d  0         # mm
+    lxDetector0  d  76.2      # mm (length of each side)
+    lyDetector0  d  2000      # mm
+    lzDetector0  d  20        # mm
+# 0th Wall ========================
+  numDetectors1  i  24
+nameOfMaterial1  s  G4_POLYETHYLENE
+    axisNormal1  s  z
+   axisReadout1  s  x
+   numReadouts1  i  2
+     xDetector1  d  0         # mm (first detector position)
+     yDetector1  d  -876.3    # mm
+     zDetector1  d  1000      # mm
+    dxDetector1  d  0         # mm (detector spacing)
+    dyDetector1  d  76.2      # mm
+    dzDetector1  d  0         # mm
+    lxDetector1  d  2000      # mm (length of each side)
+    lyDetector1  d  76.2      # mm
+    lzDetector1  d  63.5      # mm
+# 0th Wall ========================
+  numDetectors2  i  24
+nameOfMaterial2  s  G4_POLYETHYLENE
+    axisNormal2  s  z
+   axisReadout2  s  x
+   numReadouts2  i  2
+     xDetector2  d  0         # mm (first detector position)
+     yDetector2  d  -876.3    # mm
+     zDetector2  d  1200      # mm
+    dxDetector2  d  0         # mm (detector spacing)
+    dyDetector2  d  76.2      # mm
+    dzDetector2  d  0         # mm
+    lxDetector2  d  2000      # mm (length of each side)
+    lyDetector2  d  76.2      # mm
+    lzDetector2  d  63.5      # mm
