@@ -1,29 +1,23 @@
 #include <iomanip>
 #include "KBRun.hh"
-#include "KBChannelBufferS.hh"
-#include "NWSetFADCChannels.hh"
+#include "NWChannel.hh"
+#include "NWSetChannels.hh"
 
-ClassImp(NWSetFADCChannels)
+ClassImp(NWSetChannels)
 
-NWSetFADCChannels::NWSetFADCChannels()
-:KBTask("NWSetFADCChannels","")
+NWSetChannels::NWSetChannels(const char *treeName)
+:KBTask("NWSetChannels",""), fTreeName(treeName)
 {
   CreateTree();
 }
 
-NWSetFADCChannels::NWSetFADCChannels(const char *treeName)
-:KBTask("NWSetFADCChannels",""), fTreeName(treeName)
-{
-  CreateTree();
-}
-
-bool NWSetFADCChannels::Init()
+bool NWSetChannels::Init()
 {
   InitTree();
 
   fNW = (NWDetector *) KBRun::GetRun() -> GetDetector();
 
-  fChannelArray = new TClonesArray("KBChannelBufferS", 100);
+  fChannelArray = new TClonesArray("NWChannel", 100);
 
   bool saveThisBranch = true;
   KBRun::GetRun() -> RegisterBranch("Channel", fChannelArray, saveThisBranch);
@@ -31,16 +25,14 @@ bool NWSetFADCChannels::Init()
   return true;
 }
 
-void NWSetFADCChannels::Exec(Option_t*)
+void NWSetChannels::Exec(Option_t*)
 {
   fChannelArray -> Clear("C");
 
-  auto eventID = KBRun::GetRun()->GetCurrentEventID();
-
-  fDataTree -> GetEntry(eventID);
-
+  fDataTree -> GetEntry(KBRun::GetRun()->GetCurrentEventID());
   vector<Int_t> oppositeChannelIDs;
 
+  cout << "  [" << this -> GetName() << "] Number of channels: " << fNumChannels << endl;
   for (auto iChannel = 0; iChannel < fNumChannels; ++iChannel)
   {
     auto channelID1 = fChannelIDs[iChannel]; // this channel
@@ -58,23 +50,25 @@ void NWSetFADCChannels::Exec(Option_t*)
         if (fVerbosity > 1)
           cout << std::setw(4) << channelID1 << "(" << std::setw(3) << channelID2 << ")";
       }
-
-      auto channel = (KBChannelBufferS *) fChannelArray -> ConstructedAt(iChannel);
-      channel -> SetID(eventID*1000+channelID1);
-      channel -> Set(240);
-      for (auto tb = 0; tb < fNumTbs; ++tb)
-        channel -> SetAt(fRawADC[iChannel][tb],tb);
     }
+
+    auto channel = (NWChannel *) fChannelArray -> ConstructedAt(iChannel);
+    channel -> SetID(channelID1);
+    channel -> Set(240);
+    for (auto tb = 0; tb < fNumTbs; ++tb)
+      channel -> SetAt(fRawADC[iChannel][tb],tb);
   }
 }
 
-void NWSetFADCChannels::SetVerbosity(Int_t verbose) { fVerbosity = verbose; }
-void NWSetFADCChannels::CreateTree() { fDataTree = new TChain(fTreeName); }
-void NWSetFADCChannels::AddData(TString fileName) { fDataTree -> Add(fileName); }
+void NWSetChannels::SetVerbosity(Int_t verbose) { fVerbosity = verbose; }
+void NWSetChannels::CreateTree() { fDataTree = new TChain(fTreeName); }
+void NWSetChannels::AddData(TString fileName) { fDataTree -> Add(fileName); }
 
-void NWSetFADCChannels::InitTree()
+void NWSetChannels::InitTree()
 {
   fDataTree -> SetBranchAddress("nFADC",&fNumChannels);
   fDataTree -> SetBranchAddress("Channel",&fChannelIDs);
   fDataTree -> SetBranchAddress("FADC",&fRawADC);
+
+  KBRun::GetRun() -> SetEntries(fDataTree -> GetEntries());
 }

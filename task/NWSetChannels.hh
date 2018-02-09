@@ -7,12 +7,11 @@
 
 #include "NWDetector.hh"
 
-class NWSetFADCChannels : public KBTask
+class NWSetChannels : public KBTask
 { 
   public:
-    NWSetFADCChannels();
-    NWSetFADCChannels(const char *treeName = "EventTree");
-    virtual ~NWSetFADCChannels() {};
+    NWSetChannels(const char *treeName = "EventTree");
+    virtual ~NWSetChannels() {};
 
     bool Init();
     void Exec(Option_t*);
@@ -39,7 +38,7 @@ class NWSetFADCChannels : public KBTask
     Short_t fRawADC[112][240]; //TODO
     Int_t fNumTbs = 240; //TODO
 
-  ClassDef(NWSetFADCChannels, 1)
+  ClassDef(NWSetChannels, 1)
 };
 
 #endif

@@ -4,8 +4,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class NWDoSomethingTask+;
-#pragma link C++ class NWDigiTask+;
-#pragma link C++ class NWSetFADCChannels+;
+#pragma link C++ class NWSetChannels+;
 
 #endif
