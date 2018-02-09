@@ -7,4 +7,7 @@
 #pragma link C++ class NWDetector+;
 #pragma link C++ class NWDetectorPlane+;
 
+#pragma link C++ class NWChannel+;
+#pragma link C++ class NWBar+;
+
 #endif

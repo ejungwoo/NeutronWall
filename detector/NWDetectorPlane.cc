@@ -17,23 +17,6 @@ NWDetectorPlane::NWDetectorPlane()
 
 bool NWDetectorPlane::Init()
 {
-  fName = Form("Wall-%d",fPlaneID);
-  if (fIsTopReadout) {
-    if (fRefReadout == 1)
-      fName = fName + " Top Readout";
-    else
-      fName = fName + " Right Readout";
-  }
-  else {
-    if (fRefReadout == 1)
-      fName = fName + " Bottom Readout";
-    else
-      fName = fName + " Left Readout";
-  }
-
-  fNumTimeBuckets = fPar -> GetParInt("numTimeBuckets");
-  fNumTimeBucketsLite = fPar -> GetParInt("numTimeBucketsLite");
-
   TString axisNormal = fPar -> GetParString(Form("axisNormal%d",fPlaneID));
        if (axisNormal == "x") fRefNormal = 0;
   else if (axisNormal == "y") fRefNormal = 1;
@@ -55,6 +38,20 @@ bool NWDetectorPlane::Init()
   for (Short_t i = 0; i < 3; ++i)
     if (fRefReadout != i && fRefNormal != i)
       fRefSide = i;
+
+  fName = fPar -> GetParString(Form("wallName%d",fPlaneID));
+  if (fIsTopReadout) {
+    if (fRefReadout == 1) fName = fName + " Top";
+    else                  fName = fName + " Right";
+  }
+  else {
+    if (fRefReadout == 1) fName = fName + " Bottom";
+    else                  fName = fName + " Left";
+  }
+
+  fNumTimeBuckets = fPar -> GetParInt("numTimeBuckets");
+  fNumTimeBuckets = fPar -> GetParInt("numTimeBuckets");
+  fNumTimeBucketsLite = fPar -> GetParInt("numTimeBucketsLite");
 
   fNumChannels = fChannelArray -> GetEntries();
   for (auto iChannel = 0; iChannel < fNumChannels; ++iChannel)
