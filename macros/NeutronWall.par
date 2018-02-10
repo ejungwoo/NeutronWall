@@ -6,7 +6,8 @@ numTimeBuckets      i  512
 numTimeBucketsLite  i  128
 
 numWalls  i  3
-# 0th Wall ========================
+# VETO ============================
+      wallName0  s  Veto
   numDetectors0  i  24
 nameOfMaterial0  s  G4_POLYETHYLENE
     axisNormal0  s  z
@@ -21,7 +22,8 @@ nameOfMaterial0  s  G4_POLYETHYLENE
     lxDetector0  d  76.2      # mm (length of each side)
     lyDetector0  d  2000      # mm
     lzDetector0  d  20        # mm
-# 0th Wall ========================
+# Wall-A ==========================
+      wallName1  s  Wall-A
   numDetectors1  i  24
 nameOfMaterial1  s  G4_POLYETHYLENE
     axisNormal1  s  z
@@ -36,7 +38,8 @@ nameOfMaterial1  s  G4_POLYETHYLENE
     lxDetector1  d  2000      # mm (length of each side)
     lyDetector1  d  76.2      # mm
     lzDetector1  d  63.5      # mm
-# 0th Wall ========================
+# Wall-B ==========================
+      wallName2  s  Wall-B
   numDetectors2  i  24
 nameOfMaterial2  s  G4_POLYETHYLENE
     axisNormal2  s  z
