@@ -4,6 +4,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class NWEventBuildTask+;
+#pragma link C++ class FADC+;
+#pragma link C++ class TCB+;
+#pragma link C++ class Bar+;
 
 #endif

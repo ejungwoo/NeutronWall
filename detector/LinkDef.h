@@ -9,5 +9,7 @@
 
 #pragma link C++ class NWChannel+;
 #pragma link C++ class NWBar+;
+#pragma link C++ class NWChannelMap+;
+#pragma link C++ class NWChannelInfo+;
 
 #endif
