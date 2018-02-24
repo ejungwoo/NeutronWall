@@ -1,6 +1,7 @@
 #include <iomanip>
 #include "KBRun.hh"
-#include "KBChannelBufferS.hh"
+#include "NWBar.hh"
+#include "NWChannel.hh"
 #include "NWEventBuildTask.hh"
 
 ClassImp(NWEventBuildTask)
@@ -48,8 +49,6 @@ bool NWEventBuildTask::Init()
   run -> SetEntries(fNumEvents);
   fEntryTCB = 0;
 
-  //fTreeTCB -> GetEntry(fNumEvents-1); fTriggerIDEnd   = fTCB -> tcb_trigger_number;
-  //fTreeTCB -> GetEntry(0);            fTriggerIDStart = fTCB -> tcb_trigger_number;
   //fTCB -> tcb_ttime; //XXX WHAT IS THIS?
 
   for (auto moduleID = 0; moduleID < 28; ++moduleID)
@@ -73,7 +72,6 @@ bool NWEventBuildTask::Init()
         kb_error << "No Tree: " << nameTree << endl;
         return false;
       }
-      //kb_info << "Input tree, channel-" << channelID << endl;
     }
   }
 
@@ -98,15 +96,15 @@ bool NWEventBuildTask::Init()
 
 
 
-  fChannelArray = new TClonesArray("KBChannel", 112);
-  run -> RegisterBranch("Channel", fChannelArray, true);
+  fBarArray = new TClonesArray("NWBar", 112);
+  run -> RegisterBranch("Bar", fBarArray, true);
 
   return true;
 }
 
 void NWEventBuildTask::Exec(Option_t*)
 {
-  fChannelArray -> Clear("C");
+  fBarArray -> Clear("C");
 
   bool triggeredEvent = false;
   while (fEntryTCB < fNumEvents)
@@ -117,10 +115,14 @@ void NWEventBuildTask::Exec(Option_t*)
 
     Long64_t triggerID = fTCB -> tcb_trigger_number;
 
+    //Int_t channelIdx[112] = {0};
+
     for (auto channelID = 0; channelID <= 103; ++channelID)
     {
       if (channelID > 47 && channelID < 56)
         continue;
+
+      //kb_debug << channelID << " " << (fFADCCh[channelID]->mid-1)*4 + (fFADCCh[channelID]->cid-1) << endl;
 
       bool triggeredCh = false;
       while (1)
@@ -141,7 +143,6 @@ void NWEventBuildTask::Exec(Option_t*)
       }
 
       if (triggeredCh) {
-        // TODO
         triggeredEvent = true;
         fMap -> TriggerChannel(channelID);
         //kb_info << "triggered channel-" << channelID << endl;
@@ -151,97 +152,50 @@ void NWEventBuildTask::Exec(Option_t*)
     auto barIDs = fMap -> GetBarIDs();
     if (barIDs->size() == 0)
       triggeredEvent = false;
-    else {
+    else // Take Data
+    {
       kb_info << "triggerID-" << triggerID << ", triggerd by bar: ";
       for (auto id : *barIDs)
         kb_raw << id << " ";
       kb_raw << endl;
+
+      for (auto id : *barIDs) {
+        Int_t leftID, rightID;
+        bool ab = true;
+        if (id < 0) {
+          ab = false;
+          id = -id;
+        }
+
+        fMap -> FindChannelByBar(ab, id, leftID, rightID);
+        ///////////////////////////////////////////////////////////////////
+        // COPY Data
+        ///////////////////////////////////////////////////////////////////
+        auto bar = (NWBar *) fBarArray -> ConstructedAt(fBarArray->GetEntries());
+        bar -> SetWall(ab);
+        bar -> SetBarID(id);
+        //kb_debug << leftID << " " << rightID << endl;
+
+        auto left = new NWChannel();
+        left -> Set(240);
+        for (auto tb = 0; tb < 240; ++tb)
+          left -> SetAt(fFADCCh[leftID] -> ADC[tb], tb);
+
+        auto right = new NWChannel();
+        right -> Set(240);
+        for (auto tb = 0; tb < 240; ++tb)
+          right -> SetAt(fFADCCh[rightID] -> ADC[tb], tb);
+
+        bar -> SetLeft(left);
+        bar -> SetRight(right);
+        ///////////////////////////////////////////////////////////////////
+      }
     }
 
     if (triggeredEvent)
       break;
   }
+
   if (fEntryTCB >= fNumEvents)
     KBRun::GetRun() -> EndOfEvent();
-
-
-
-  /*
-  for (auto channelID = 0; channelID <= 103; channelID++)
-  {
-    if (channelID > 47 && channelID < 56)
-      continue;
-
-    fFADCCh[channelID] -> tnum == fTriggerID;
-
-    while (fFADCCh[channelID] -> tnum < fTriggerID) {
-      countFADC[channelID]++;
-      if (countFADC[channelID] >= fTreeCh[channelID] -> GetEntries()) 
-        break;
-
-      fTreeCh[channelID] -> GetEntry(countFADC[channelID]);
-    }
-
-    if (fFADCCh[channelID] -> tnum == fTriggerID)
-    {
-      bool bcrossed = false; 
-      if (SPCHMap[channelID] >= 0) // Special Channel 
-      {
-        SPCh[numSpecial] = channelID;
-        for (auto tb = 0; tb < kNumTbs; tb++)
-        {
-          SPWAVE[numSpecial][tb]	= fFADCCh[channelID] -> ADC[tb];
-
-          if(tb>0 && SPWAVE[numSpecial][tb]>=1400 && SPWAVE[numSpecial][tb-1] < 1400 && !bcrossed)
-          {
-            fSpecialTime[numSpecial] = tb*2 - 2*(SPWAVE[numSpecial][tb]-1400)/(SPWAVE[numSpecial][tb]-SPWAVE[numSpecial][tb-1]);
-            bcrossed = true;	      
-          }
-        }
-        ++numSpecial;
-      }
-      else
-      {
-        if( channelID < 0 || channelID >= 112 ){ continue; }
-        Ch[nWAVE] = channelID;	  
-        CH_ttime[nWAVE] = fFADCCh[channelID] -> ttime;
-        for( int ip = 0; ip < kNumTbs; ip++){
-          WAVE[nWAVE][ip]	= fFADCCh[channelID] -> ADC[ip];
-        }
-        nWAVE++;
-        Int_t RLID = NWRL[channelID]-1;   // 0 : R, 1 :L
-        Int_t ABID = NWABMap[channelID]-1;// 0 : A, 1 :B 
-        Int_t BARID= BarIDMap[channelID]; // From 0 to 24;
-        if( ABID == 0 ){
-
-          TMPAID[BARID]=BARID;
-          TMPANHIT[BARID]++;
-          TMPAModSum [BARID][RLID] =fFADCCh[channelID] -> ADCSum;
-          TMPAModPart[BARID][RLID] =fFADCCh[channelID] -> ADCPart;
-          TMPAModTime[BARID][RLID] =fFADCCh[channelID] -> ADCTime;
-          TMPAModPeak[BARID][RLID] =fFADCCh[channelID] -> ADCPeak;
-          TMPAModPed [BARID][RLID] =fFADCCh[channelID] -> ADCPed; 	
-
-        }else if( ABID == 1 ){
-
-          TMPBID[BARID]=BARID;
-          TMPBNHIT[BARID]++;
-          TMPBModSum [BARID][RLID] =fFADCCh[channelID] -> ADCSum;
-          TMPBModPart[BARID][RLID] =fFADCCh[channelID] -> ADCPart;
-          TMPBModTime[BARID][RLID] =fFADCCh[channelID] -> ADCTime;
-          TMPBModPeak[BARID][RLID] =fFADCCh[channelID] -> ADCPeak;
-          TMPBModPed [BARID][RLID] =fFADCCh[channelID] -> ADCPed; 	
-
-        }	  
-      }
-    }
-    else {
-      breakFromEvent = true;
-      break;
-    }
-  }
-  */
-  //auto eventID = KBRun::GetRun() -> GetCurrentEventID();
-
-  //fDataTree -> GetEntry(eventID);
 }

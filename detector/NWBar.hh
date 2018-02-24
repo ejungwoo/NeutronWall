@@ -13,11 +13,11 @@ class NWBar : public TObject
     virtual void Copy (TObject &object) const;
     virtual void Print(Option_t *option = "") const;
 
-    void SetChannelLeft(NWChannel *val) { fLeft = val; }
-    NWChannel *GetChannelLeft() { return fLeft; }
+    void SetLeft(NWChannel *val) { fLeft = val; }
+    NWChannel *GetLeft() { return fLeft; }
 
-    void SetChannelRight(NWChannel *val) { fRight = val; }
-    NWChannel *GetChannelRight() { return fRight; }
+    void SetRight(NWChannel *val) { fRight = val; }
+    NWChannel *GetRight() { return fRight; }
 
     void SetBarID(Int_t val) { fBarID = val; }
     Int_t GetBarID() { return fBarID; }
@@ -25,10 +25,15 @@ class NWBar : public TObject
     void SetGeoMean(Double_t val) { fGeoMean = val; }
     Double_t GetGeoMean() { return fGeoMean; }
 
-  private:
-    NWChannel *fLeft = nullptr;
-    NWChannel *fRight = nullptr;
+    void SetWall(bool val) { fWallID = (val?1:0); } ///< 1:A 0:B
+    void SetWallID(Int_t val) { fWallID = val; } ///< 1:A 0:B
+    Int_t GetWallID() { return fWallID; }
 
+  private:
+    NWChannel *fLeft = nullptr; //->
+    NWChannel *fRight = nullptr; //->
+
+    Int_t fWallID; ///< 1:A 0:B
     Int_t fBarID;
     Double_t fGeoMean;
 

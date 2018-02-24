@@ -45,6 +45,8 @@ class NWChannelMap : public TObject
 
     vector<Int_t> *GetBarIDs();
 
+    void FindChannelByBar(bool ab, Int_t barID, Int_t &leftID, Int_t &rightID);
+
   private:
     TObjArray fChannelList;
     vector<Int_t> fPairIDs;

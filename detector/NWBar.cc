@@ -17,8 +17,8 @@ void NWBar::Copy(TObject &obj) const
 {
   auto pair = (NWBar &) obj;
 
-  pair.SetChannelLeft(fLeft);
-  pair.SetChannelRight(fRight);
+  pair.SetLeft(fLeft);
+  pair.SetRight(fRight);
   pair.SetBarID(fBarID);
   pair.SetGeoMean(fGeoMean);
 }

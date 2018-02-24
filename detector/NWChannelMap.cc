@@ -117,3 +117,17 @@ void NWChannelMap::TriggerChannel(Int_t channelID)
 }
 
 vector<Int_t> *NWChannelMap::GetBarIDs() { return &fBarIDs; }
+
+void NWChannelMap::FindChannelByBar(bool ab, Int_t barID, Int_t &leftID, Int_t &rightID)
+{
+  for (auto i = 0; i < 112; ++i)
+  {
+    auto info = (NWChannelInfo *) fChannelList[i];
+    if (info->fBarID == barID && info->fAB == ab) {
+      if (info->fLR)
+        leftID = info->fChannelID;
+      else
+        rightID = info->fChannelID;
+    }
+  }
+}

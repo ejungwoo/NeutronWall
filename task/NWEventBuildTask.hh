@@ -22,7 +22,11 @@ class NWEventBuildTask : public KBTask
     void SetRunName(TString name) { fRunName = name; }
 
   private:
-    TClonesArray* fChannelArray;
+
+  private:
+    TClonesArray* fBarArray;
+
+    TString fRunName;
 
     TTree* fTreeCh[112];
     FADC*  fFADCCh[112];
@@ -31,13 +35,8 @@ class NWEventBuildTask : public KBTask
 
     TTree* fTreeTCB;
     TCB* fTCB;
-
     Long64_t fEntryTCB;
     Long64_t fNumEvents;
-    //ULong64_t fTriggerIDEnd;
-    //ULong64_t fTriggerIDStart;
-
-    TString fRunName;
 
     NWChannelMap *fMap;
 
