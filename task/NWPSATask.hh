@@ -53,12 +53,8 @@ class NWPSATask : public KBTask
        Int_t GetPosMax() { return fPosMax; } ///< Get position at max value
     Double_t GetMax()    { return fMax; }    ///< Get max value
 
-    /* 
-    Double_t GetAmplitude()  { return 1; }
-    Double_t GetPosition()   { return 1; }
-    Double_t GetAmplitudeError()  { return fAmplitude - fMax; }
-    */
-
+    Double_t GetAmplitude()  { return fMax; }
+    Double_t GetPosition()   { return fFitFunction -> GetParameter(1); }
     Double_t GetChiSquare()  { return fFitFunction -> GetChisquare(); }
 
   // Steer
@@ -80,7 +76,7 @@ class NWPSATask : public KBTask
 
     Int_t fPosBeforeThreshold; ///< position just before value rise above threshold
     Double_t fThreshold; ///< threshold
-    Double_t fThresholdLL = 0; ///< low limit of threshold
+    Double_t fThresholdLL = 4; ///< low limit of threshold
     Double_t fThresholdRatio = 0.01; ///< threshold = fThresholdRatio * fMax
 
     Int_t fPosMax; ///< position at max value

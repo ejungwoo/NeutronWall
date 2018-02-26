@@ -9,17 +9,59 @@ NWPSATask::NWPSATask()
 
 Double_t NWPSATask::PulseFunction(Double_t *tb, Double_t *par)
 {
-  if (tb[0] < par[1])
-    return 0;
+  auto f1 = 0.;
+  auto f2 = 0.;
+  auto f3 = 0.;
+  auto f4 = 0.;
+  auto norm = 1.;
 
-  auto tau1 = (tb[0]-par[1])/par[2];
-  auto tau2 = (tb[0]-par[1]+1)/par[2];
+  auto tbf = tb[0]-par[1];
+  if (tbf> 0)
+  {
+    { // value calculation
+      auto tau1 = (tbf  )/par[2] + 1;
+      auto tau2 = (tbf+1)/par[2] + 1;
+      auto x1 = sqrt((tau1+1)*(tau1+1)-1);
+      auto x2 = sqrt((tau2+1)*(tau2+1)-1);
+      f1 = x1*atan(x1) - 0.5 * log(x1*x1+1);
+      f2 = x2*atan(x2) - 0.5 * log(x2*x2+1);
 
-  auto tt1 = (tau1+1)*(tau1+1);
-  auto tt2 = (tau1+1)*(tau2+1);
+      Double_t tbi = tbf-par[3];
+      if (tbi < 0) {
+        f3 = sqrt(3)*atan(sqrt(3)) - 0.5 * log(4);
+        auto tau4 = 1./par[2] + 1;
+        auto x4 = sqrt((tau4+1)*(tau4+1)-1);
+        f4 = x4*atan(x4) - 0.5 * log(x4*x4+1);
+      }
+      else {
+        auto tau3 = (tbi  )/par[2] + 1;
+        auto tau4 = (tbi+1)/par[2] + 1;
+        auto x3 = sqrt((tau3+1)*(tau3+1)-1);
+        auto x4 = sqrt((tau4+1)*(tau4+1)-1);
+        f3 = x3*atan(x3) - 0.5 * log(x3*x3+1);
+        f4 = x4*atan(x4) - 0.5 * log(x4*x4+1);
+      }
+    }
 
-  auto val = par[0] * (atan(sqrt(tt2-1)) - atan(sqrt(tt1-1)));
-  val = atan(tau1) * val;
+    { // normalize calculation
+      auto tau1 = (par[3]  )/par[2] + 1;
+      auto tau2 = (par[3]+1)/par[2] + 1;
+      auto x1 = sqrt((tau1+1)*(tau1+1)-1);
+      auto x2 = sqrt((tau2+1)*(tau2+1)-1);
+      auto f1_norm = x1*atan(x1) - 0.5 * log(x1*x1+1);
+      auto f2_norm = x2*atan(x2) - 0.5 * log(x2*x2+1);
+
+      auto f3_norm = sqrt(3)*atan(sqrt(3)) - 0.5 * log(4);
+      auto tau4 = 1./par[2] + 1;
+      auto x4= sqrt((tau4+1)*(tau4+1)-1);
+      auto f4_norm = x4*atan(x4) - 0.5 * log(x4*x4+1);
+
+      norm = (f2_norm-f1_norm)-(f4_norm-f3_norm);
+    }
+  }
+
+  auto val = (f2-f1)-(f4-f3);
+  val = par[0] * val / norm;
 
   return val;
 }
@@ -37,10 +79,10 @@ bool NWPSATask::Init()
 
   Clear();
 
-  fFitFunction = new TF1("Pulse",this,&NWPSATask::PulseFunction,0,kNWPSA_NDATA_MAX,3,"NWPSATask","PulseFunction");
+  fFitFunction = new TF1("Pulse",this,&NWPSATask::PulseFunction,0,kNWPSA_NDATA_MAX,4,"NWPSATask","PulseFunction");
   fFitFunction -> SetNpx(1000);
-  fFitFunction -> SetParNames("amplitude","position","#alpha (L/c)");
-  fFitFunction -> SetParameters(100,50,1);
+  fFitFunction -> SetParNames("amplitude","position","#alpha (L/c)","#Deltatb");
+  fFitFunction -> SetParameters(100,50,5,1);
 
   fF1 = fFitFunction;
 
@@ -129,15 +171,27 @@ bool NWPSATask::CollectSample()
   Double_t scaleRegions[] = {1., 8.,4.,2.};
 
   auto pos = 0;
+  //for (; pos <= fPosBeforeThreshold; ++pos) {
   for (; pos <= fPosBeforeThreshold; ++pos) {
     fSample -> SetPoint(fSample->GetN(), pos+0.5, 0);
     fSample -> SetPointError(fSample->GetN()-1, xerror, yerror);
   }
 
-  fSample -> SetPoint(fSample->GetN(),fPosMax-1+0.5, fData[fPosMax-1]);
-  fSample -> SetPointError(fSample->GetN()-1, xerror, 2*yerror);
+  //auto thresholdCollect = fThreshold;
+  auto thresholdCollect = 0.;
 
-  pos = fPosMax;
+  for (; pos < fPosMax; ++pos) {
+    auto val = fData[pos];
+    if (val > thresholdCollect) {
+      fSample -> SetPoint(fSample->GetN(), pos+0.5, val);
+      fSample -> SetPointError(fSample->GetN()-1, xerror, yerror);
+    }
+  }
+
+  //fSample -> SetPoint(fSample->GetN(),fPosMax-1+0.5, fData[fPosMax-1]);
+  //fSample -> SetPointError(fSample->GetN()-1, xerror, 2*yerror);
+
+  //pos = fPosMax;
   for (auto iRegion = 0; iRegion < 4; ++iRegion)
   {
     auto step = stepRegions[iRegion];
@@ -145,7 +199,7 @@ bool NWPSATask::CollectSample()
 
     for (auto ipos = 0; ipos < step && pos < fN; ++ipos) {
       auto val = fData[pos];
-      if (val > fThreshold) {
+      if (val > thresholdCollect) {
         fSample -> SetPoint(fSample->GetN(), pos+0.5, val);
         fSample -> SetPointError(fSample->GetN()-1, xerror, scale*yerror);
       }
@@ -158,9 +212,11 @@ bool NWPSATask::CollectSample()
 
 bool NWPSATask::FitSample()
 {
-  fFitFunction -> SetParameters(10*fMax, fPosMax, 5);
-  fFitFunction -> SetParLimits(1, fPosBeforeThreshold+0.5, fPosMax+0.5);
-  //fFitFunction -> SetParLimits(0, fPosBeforeThreshold+0.5, fPosMax+0.5);
+  fFitFunction -> SetParameters(fMax, fPosBeforeThreshold, 5, 1);
+  fFitFunction -> SetParLimits(0, fMax, fMax*1.2);
+  fFitFunction -> SetParLimits(1, fPosBeforeThreshold-3.5, fPosBeforeThreshold+1.5);
+  fFitFunction -> SetParLimits(2, 0.1, 15);
+  fFitFunction -> SetParLimits(3, 0.1, 10);
 
   fSample -> Fit(fFitFunction, "Q");
 
@@ -277,10 +333,11 @@ TGraphErrors *NWPSATask::CopyOfFitSample()
 
 TF1 *NWPSATask::CopyOfFitFunction()
 {
-  auto f1 = new TF1(Form("fit_%d",fIdx),this,&NWPSATask::PulseFunction,0,fN,3,"NWPSATask","PulseFunction");
+  auto f1 = new TF1(Form("fit_%d",fIdx),this,&NWPSATask::PulseFunction,0,fN,4,"NWPSATask","PulseFunction");
   f1 -> SetParameter(0, fFitFunction -> GetParameter(0));
   f1 -> SetParameter(1, fFitFunction -> GetParameter(1));
   f1 -> SetParameter(2, fFitFunction -> GetParameter(2));
+  f1 -> SetParameter(3, fFitFunction -> GetParameter(3));
   f1 -> SetNpx(2000);
 
   fF1 = f1;
@@ -312,6 +369,7 @@ TLegend *NWPSATask::CopyOfLegend()
   l -> AddEntry((TObject*)0, Form("Amplitude: %.1f", fFitFunction -> GetParameter(0)), "");
   l -> AddEntry((TObject*)0, Form("Position: %.1f",  fFitFunction -> GetParameter(1)), "");
   l -> AddEntry((TObject*)0, Form("#alpha: %.1f",    fFitFunction -> GetParameter(2)), "");
+  l -> AddEntry((TObject*)0, Form("#Deltatb: %.1f",  fFitFunction -> GetParameter(3)), "");
   l -> AddEntry((TObject*)0, Form("#chi^{2}: %.1f",  fFitFunction -> GetChisquare()),  "");
 
   return l;
