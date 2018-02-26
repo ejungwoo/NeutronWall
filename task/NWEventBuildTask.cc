@@ -115,7 +115,7 @@ void NWEventBuildTask::Exec(Option_t*)
 
     Long64_t triggerID = fTCB -> tcb_trigger_number;
 
-    //Int_t channelIdx[112] = {0};
+    //kb_debug << fEntryTCB << " (" << fNumEvents << ") -> " << triggerID << endl;
 
     for (auto channelID = 0; channelID <= 103; ++channelID)
     {
@@ -145,6 +145,7 @@ void NWEventBuildTask::Exec(Option_t*)
       if (triggeredCh) {
         triggeredEvent = true;
         fMap -> TriggerChannel(channelID);
+
         //kb_info << "triggered channel-" << channelID << endl;
       }
     }
@@ -152,7 +153,7 @@ void NWEventBuildTask::Exec(Option_t*)
     auto barIDs = fMap -> GetBarIDs();
     if (barIDs->size() == 0)
       triggeredEvent = false;
-    else // Take Data
+    else // data is good to go
     {
       kb_info << "triggerID-" << triggerID << ", triggerd by bar: ";
       for (auto id : *barIDs)
@@ -168,27 +169,30 @@ void NWEventBuildTask::Exec(Option_t*)
         }
 
         fMap -> FindChannelByBar(ab, id, leftID, rightID);
-        ///////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////
         // COPY Data
-        ///////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////
         auto bar = (NWBar *) fBarArray -> ConstructedAt(fBarArray->GetEntries());
         bar -> SetWall(ab);
         bar -> SetBarID(id);
+
         //kb_debug << leftID << " " << rightID << endl;
 
         auto left = new NWChannel();
+        left -> SetID(leftID);
         left -> Set(240);
         for (auto tb = 0; tb < 240; ++tb)
           left -> SetAt(fFADCCh[leftID] -> ADC[tb], tb);
 
         auto right = new NWChannel();
+        right -> SetID(rightID);
         right -> Set(240);
         for (auto tb = 0; tb < 240; ++tb)
           right -> SetAt(fFADCCh[rightID] -> ADC[tb], tb);
 
         bar -> SetLeft(left);
         bar -> SetRight(right);
-        ///////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////
       }
     }
 
