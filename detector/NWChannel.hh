@@ -36,6 +36,18 @@ class NWChannel: public KBChannelBufferS
     Double_t GetADCPartSum() { return fADCPartSum; }
 
 
+    void SetIsFitted(bool val = true) { fIsFitted = val; }
+    bool GetIsFitted() { return fIsFitted; }
+
+    void SetPosition(Double_t val) { fPosition = val; }
+    Double_t GetPosition() { return fPosition; }
+
+    void SetAlpha(Double_t val) { fAlpha = val; }
+    Double_t GetAlpha() { return fAlpha; }
+
+    void SetChiSquare(Double_t val) { fChiSquare = val; }
+    Double_t GetChiSquare() { return fChiSquare; }
+
   private:
     Int_t fModuleID;
     Int_t fMChannelID;
@@ -45,6 +57,11 @@ class NWChannel: public KBChannelBufferS
     Double_t fADC;          ///< ADC at peak position
     Double_t fADCTotalSum;  ///< total sum of ADC (slow component)
     Double_t fADCPartSum;   ///< part sum of ADC (fast component)
+
+    bool fIsFitted = false;
+    Double_t fPosition;
+    Double_t fAlpha;
+    Double_t fChiSquare;
 
   ClassDef(NWChannel, 1)
 };

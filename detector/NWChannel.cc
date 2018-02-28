@@ -16,6 +16,11 @@ void NWChannel::Clear(Option_t *opt)
   fADC = -9999;
   fADCTotalSum = -9999;
   fADCPartSum = -9999;
+
+  fIsFitted = false;
+  fPosition = -9999;
+  fAlpha = -9999;
+  fChiSquare = -9999;
 }
 
 void NWChannel::Copy(TObject &obj) const
@@ -30,6 +35,11 @@ void NWChannel::Copy(TObject &obj) const
   ch.SetADC(fADC);
   ch.SetADCTotalSum(fADCTotalSum);
   ch.SetADCPartSum(fADCPartSum);
+
+  ch.SetIsFitted(fIsFitted);
+  ch.SetPosition(fPosition);
+  ch.SetAlpha(fAlpha);
+  ch.SetChiSquare(fChiSquare);
 }
 
 void NWChannel::Print(Option_t *) const

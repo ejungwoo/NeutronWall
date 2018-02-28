@@ -19,23 +19,35 @@ class NWBar : public TObject
     void SetRight(NWChannel *val) { fRight = val; }
     NWChannel *GetRight() { return fRight; }
 
+
+
+    void SetWallID(bool val) { fWallID = val; } ///< 1:A 0:B
+    bool GetWallID() { return fWallID; } ///< 1:A 0:B
+
     void SetBarID(Int_t val) { fBarID = val; }
     Int_t GetBarID() { return fBarID; }
+
+
 
     void SetGeoMean(Double_t val) { fGeoMean = val; }
     Double_t GetGeoMean() { return fGeoMean; }
 
-    void SetWall(bool val) { fWallID = (val?1:0); } ///< 1:A 0:B
-    void SetWallID(Int_t val) { fWallID = val; } ///< 1:A 0:B
-    Int_t GetWallID() { return fWallID; }
+    void SetTDCDiff(Double_t val) { fTDCDiff = val; }
+    Double_t GetTDCDiff() { return fTDCDiff; }
+
+    void SetADCDiff(Double_t val) { fADCDiff = val; }
+    Double_t GetADCDiff() { return fADCDiff; }
 
   private:
     NWChannel *fLeft = nullptr; //->
     NWChannel *fRight = nullptr; //->
 
-    Int_t fWallID; ///< 1:A 0:B
+    bool fWallID; ///< 1:A 0:B
     Int_t fBarID;
+
     Double_t fGeoMean;
+    Double_t fTDCDiff;
+    Double_t fADCDiff;
 
   ClassDef(NWBar, 1)
 };

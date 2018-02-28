@@ -9,8 +9,13 @@ void NWBar::Clear(Option_t *opt)
 {
   fLeft = nullptr;
   fRight = nullptr;
+
+  fWallID = 1;
   fBarID = -1;
+
   fGeoMean = -999;
+  fTDCDiff = -999;
+  fADCDiff = -999;
 }
 
 void NWBar::Copy(TObject &obj) const
@@ -19,8 +24,13 @@ void NWBar::Copy(TObject &obj) const
 
   pair.SetLeft(fLeft);
   pair.SetRight(fRight);
+
+  pair.SetWallID(fWallID);
   pair.SetBarID(fBarID);
+
   pair.SetGeoMean(fGeoMean);
+  pair.SetTDCDiff(fTDCDiff);
+  pair.SetADCDiff(fTDCDiff);
 }
 
 void NWBar::Print(Option_t *) const
