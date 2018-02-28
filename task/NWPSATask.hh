@@ -19,15 +19,19 @@ class NWPSATask : public KBTask
 
     bool Init();
     void Clear(Option_t *option="");
+    void Draw(Option_t *option="");
     void Exec(Option_t*);
 
-    bool Fit(const Short_t  *adc, Int_t n);
-    bool Fit(      Short_t  *adc, Int_t n);
-    bool Fit(const Double_t *adc, Int_t n);
-    bool Fit(      Double_t *adc, Int_t n);
+    bool Exec(const Short_t  *adc, Int_t n);
+    bool Exec(      Short_t  *adc, Int_t n);
+    bool Exec(const Double_t *adc, Int_t n);
+    bool Exec(      Double_t *adc, Int_t n);
 
-    bool Fit(TArrayS *tarray);
-    bool Fit(TArrayD *tarray);
+    bool Exec(TArrayS *tarray);
+    bool Exec(TArrayD *tarray);
+
+    void SetFit(bool val) { fFitFlag = val; }
+    void SetAlphaLL(Double_t val = 0) { fAlphaLL = (val > 0) * val; }
 
   // Getters
   public:
@@ -53,13 +57,20 @@ class NWPSATask : public KBTask
        Int_t GetPosMax() { return fPosMax; } ///< Get position at max value
     Double_t GetMax()    { return fMax; }    ///< Get max value
 
-    Double_t GetAmplitude()  { return fMax; }
-    Double_t GetPosition()   { return fFitFunction -> GetParameter(1); }
-    Double_t GetChiSquare()  { return fFitFunction -> GetChisquare(); }
+    Double_t GetFitAmplitude()  { return exp(-2/7.) * fFitFunction -> GetParameter(0); }
+    Double_t GetFitPosition()   { return fFitFunction -> GetParameter(1); }
+    Double_t GetAlphaLL()       { return fAlphaLL; }
+    Double_t GetFitAlpha()      { return fFitFunction -> GetParameter(2); }
+    Double_t GetFitChiSquare()  { return fFitFunction -> GetChisquare(); }
+
+    Double_t GetPosition(Double_t r = .5) {
+      return fPosBeforeThreshold + (fPosMax-fPosBeforeThreshold)/(1.-fData[fPosBeforeThreshold]/fMax)*(r-fData[fPosBeforeThreshold]/fMax);
+    }
 
   // Steer
   private:
     bool Fit(); ///< Master run method
+    bool NoFit();
 
     bool PedestalSubtraction ();
     bool ThresholdHandling   ();
@@ -69,6 +80,10 @@ class NWPSATask : public KBTask
     Double_t PulseFunction(Double_t *tb, Double_t *par);
 
   private:
+    bool fFitFlag = true;
+
+    Double_t fNormAmp;
+
     Int_t fN = kNWPSA_NDATA_MAX; ///< number of data point
     Double_t fData[kNWPSA_NDATA_MAX]; ///< data to fit
 
@@ -84,6 +99,8 @@ class NWPSATask : public KBTask
 
     TGraphErrors *fSample; ///< Sample to fit
     TF1 *fFitFunction; ///< TF1 of PulseFunction()
+
+    Double_t fAlphaLL = 0; // Low limit of alpha
 
   // Below members are only for debugging and checking data
   private:

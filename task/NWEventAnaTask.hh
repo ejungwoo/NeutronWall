@@ -14,10 +14,17 @@ class NWEventAnaTask : public KBTask
     bool Init();
     void Exec(Option_t*);
 
+    void SetFit(bool val) { fFitFlag = val; }
+    void SetReuseBranch(bool val) { fReuseBranchFlag = val; }
+
   private:
     TClonesArray* fBarArray;
+    TClonesArray* fBarArrayNew;
 
-    NWPSATask *fPSATask;
+    NWPSATask *fPSA;
+
+    bool fFitFlag = true;
+    bool fReuseBranchFlag = true;
 
   ClassDef(NWEventAnaTask, 1)
 };

@@ -172,8 +172,19 @@ void NWEventBuildTask::Exec(Option_t*)
         ///////////////////////////////////////////////////////////////////////////
         // COPY Data
         ///////////////////////////////////////////////////////////////////////////
+
+        /*
+        for (auto tb = 1; tb < 240; ++tb)
+        {
+          if(fFADCCh[48][tb]>=1400 && fFADCCh[48][tb-1] < 1400) {
+            fSpecialTime[numSpecial] = tb*2 - 2*(fFADCCh[48][tb]-1400)/(fFADCCh[48][tb]-fFADCCh[48][tb-1]);
+            break;
+          }
+        }
+        */
+
         auto bar = (NWBar *) fBarArray -> ConstructedAt(fBarArray->GetEntries());
-        bar -> SetWall(ab);
+        bar -> SetWallID(ab);
         bar -> SetBarID(id);
 
         //kb_debug << leftID << " " << rightID << endl;
@@ -184,11 +195,23 @@ void NWEventBuildTask::Exec(Option_t*)
         for (auto tb = 0; tb < 240; ++tb)
           left -> SetAt(fFADCCh[leftID] -> ADC[tb], tb);
 
+        left -> SetPedestal(   fFADCCh[leftID] -> ADCPed);
+        left -> SetTDC(        fFADCCh[leftID] -> ADCPart);
+        left -> SetADC(        fFADCCh[leftID] -> ADCTime);
+        left -> SetADCTotalSum(fFADCCh[leftID] -> ADCSum);
+        left -> SetADCPartSum( fFADCCh[leftID] -> ADCPeak);
+
         auto right = new NWChannel();
         right -> SetID(rightID);
         right -> Set(240);
         for (auto tb = 0; tb < 240; ++tb)
           right -> SetAt(fFADCCh[rightID] -> ADC[tb], tb);
+
+        right -> SetPedestal(   fFADCCh[rightID] -> ADCPed);
+        right -> SetTDC(        fFADCCh[rightID] -> ADCPart);
+        right -> SetADC(        fFADCCh[rightID] -> ADCTime);
+        right -> SetADCTotalSum(fFADCCh[rightID] -> ADCSum);
+        right -> SetADCPartSum( fFADCCh[rightID] -> ADCPeak);
 
         bar -> SetLeft(left);
         bar -> SetRight(right);
