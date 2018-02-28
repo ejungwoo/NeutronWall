@@ -1,0 +1,9 @@
+# nscl.par
+# created from method KBParameterContainer::SaveAs
+
+TCBCONVDATA                s  /Users/ejungwoo/data/nscl/tcb/
+CONVDATA_0                 s  /Users/ejungwoo/data/nscl/data0/
+CONVDATA_1                 s  /Users/ejungwoo/data/nscl/data1/
+CONVDATA_2                 s  /Users/ejungwoo/data/nscl/data2/
+CONVDATA_3                 s  /Users/ejungwoo/data/nscl/data3/
+channelMapFile             s  /Users/ejungwoo/KEBI/NeutronWall/event/channel_map.txt
