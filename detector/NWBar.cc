@@ -16,6 +16,9 @@ void NWBar::Clear(Option_t *opt)
   fGeoMean = -999;
   fTDCDiff = -999;
   fADCDiff = -999;
+
+  fGeoMeanTotal = -999;
+  fGeoMeanPart = -999;
 }
 
 void NWBar::Copy(TObject &obj) const
@@ -31,6 +34,9 @@ void NWBar::Copy(TObject &obj) const
   pair.SetGeoMean(fGeoMean);
   pair.SetTDCDiff(fTDCDiff);
   pair.SetADCDiff(fTDCDiff);
+
+  pair.SetGeoMeanTotal(fGeoMeanTotal);
+  pair.SetGeoMeanPart(fGeoMeanPart);
 }
 
 void NWBar::Print(Option_t *) const

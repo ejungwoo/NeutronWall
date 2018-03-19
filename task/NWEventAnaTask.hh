@@ -15,6 +15,7 @@ class NWEventAnaTask : public KBTask
     void Exec(Option_t*);
 
     void SetFit(bool val) { fFitFlag = val; }
+    void SetUseShortRange(bool val) { fUseShortRange = val; }
     void SetReuseBranch(bool val) { fReuseBranchFlag = val; }
 
   private:
@@ -24,6 +25,7 @@ class NWEventAnaTask : public KBTask
     NWPSATask *fPSA;
 
     bool fFitFlag = true;
+    bool fUseShortRange = false;
     bool fReuseBranchFlag = true;
 
   ClassDef(NWEventAnaTask, 1)

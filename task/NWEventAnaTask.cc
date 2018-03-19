@@ -24,6 +24,8 @@ bool NWEventAnaTask::Init()
     KBRun::GetRun() -> RegisterBranch("BarF", fBarArray, true);
   }
 
+  fPSA -> SetUseShortRange(fUseShortRange);
+
   return true;
 }
 
@@ -42,59 +44,76 @@ void NWEventAnaTask::Exec(Option_t*)
     if (!fReuseBranchFlag)
       barOut = (NWBar *) fBarArrayNew -> ConstructedAt(fBarArrayNew -> GetEntries());
 
-    auto left = bar -> GetLeft();
-    auto lPos = abs(-11-bar->GetTDCDiff());
-    fPSA -> SetAlphaLL(lPos); // TODO THIS IS ONLY FOR WALL 0 BAR 18
-    fPSA -> Exec(left);
+    auto chLeft = bar -> GetLeft();
+    auto posLeft = abs(-11-bar->GetTDCDiff());
+    //fPSA -> SetAlphaLL(posLeft); // TODO THIS IS ONLY FOR WALL 0 BAR 18
+    fPSA -> Exec(chLeft);
 
     Double_t tLeft;
+    Double_t aLeft;
     if (fFitFlag) {
       tLeft = fPSA -> GetFitPosition();
-      left -> SetIsFitted(true);
-      left -> SetADC(fPSA -> GetFitAmplitude());
-      left -> SetPosition(lPos);
-      left -> SetAlpha(fPSA -> GetFitAlpha());
-      left -> SetChiSquare(fPSA -> GetFitChiSquare());
+      aLeft = fPSA -> GetFitAmplitude();
+      chLeft -> SetIsFitted(true);
+      chLeft -> SetPosition(posLeft);
+      chLeft -> SetAlpha(fPSA -> GetFitAlpha());
+      chLeft -> SetChiSquare(fPSA -> GetFitChiSquare());
     }
     else {
-      left -> SetIsFitted(false);
-      left -> SetADC(fPSA -> GetMax());
       tLeft = fPSA -> GetPosition();
+      aLeft = fPSA -> GetMax();
+      chLeft -> SetIsFitted(false);
     }
-    left -> SetPedestal(fPSA -> GetPedestal());
-    left -> SetTDC(tLeft);
+    chLeft -> SetPedestal(fPSA -> GetPedestal());
+    chLeft -> SetTDC(tLeft);
+    chLeft -> SetADC(aLeft);
+
+    Double_t tsLeft = fPSA -> GetTotalSum();
+    Double_t psLeft = fPSA -> GetPartSum();
+    chLeft -> SetADCTotalSum(tsLeft);
 
 
 
-    auto right = bar -> GetRight();
-    auto rPos = abs(2-bar->GetTDCDiff());
-    fPSA -> SetAlphaLL(rPos); // TODO THIS IS ONLY FOR WALL 0 BAR 18
-    fPSA -> Exec(right);
+    auto chRight = bar -> GetRight();
+    auto posRight = abs(2-bar->GetTDCDiff());
+    //fPSA -> SetAlphaLL(posRight); // TODO THIS IS ONLY FOR WALL 0 BAR 18
+    fPSA -> Exec(chRight);
 
     Double_t tRight;
+    Double_t aRight;
     if (fFitFlag) {
       tRight = fPSA -> GetFitPosition();
-      right -> SetIsFitted(true);
-      right -> SetADC(fPSA -> GetFitAmplitude());
-      right -> SetPosition(rPos);
-      right -> SetAlpha(fPSA -> GetFitAlpha());
-      right -> SetChiSquare(fPSA -> GetFitChiSquare());
+      aRight = fPSA -> GetFitAmplitude();
+      chRight -> SetIsFitted(true);
+      chRight -> SetPosition(posRight);
+      chRight -> SetAlpha(fPSA -> GetFitAlpha());
+      chRight -> SetChiSquare(fPSA -> GetFitChiSquare());
     }
     else {
-      right -> SetIsFitted(false);
-      right -> SetADC(fPSA -> GetMax());
       tRight = fPSA -> GetPosition();
+      aRight = fPSA -> GetMax();
+      chRight -> SetIsFitted(false);
     }
-    right -> SetPedestal(fPSA -> GetPedestal());
-    right -> SetTDC(tRight);
+    chRight -> SetPedestal(fPSA -> GetPedestal());
+    chRight -> SetTDC(tRight);
+    chRight -> SetADC(aRight);
+
+    Double_t tsRight = fPSA -> GetTotalSum();
+    Double_t psRight = fPSA -> GetPartSum();
+    chRight -> SetADCTotalSum(tsRight);
 
 
 
     if (!fReuseBranchFlag) {
-      barOut -> SetLeft(left);
-      barOut -> SetRight(right);
+      barOut -> SetLeft(chLeft);
+      barOut -> SetRight(chRight);
     }
 
     barOut -> SetTDCDiff(tLeft - tRight);
+    barOut -> SetGeoMean(sqrt(aLeft*aRight));
+    barOut -> SetADCDiff(log(aLeft/aRight));
+
+    barOut -> SetGeoMeanTotal(sqrt(tsLeft*tsRight));
+    barOut -> SetGeoMeanPart(sqrt(psLeft*psRight));
   }
 }

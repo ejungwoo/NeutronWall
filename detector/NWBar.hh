@@ -38,6 +38,14 @@ class NWBar : public TObject
     void SetADCDiff(Double_t val) { fADCDiff = val; }
     Double_t GetADCDiff() { return fADCDiff; }
 
+
+
+    void SetGeoMeanTotal(Double_t val) { fGeoMeanTotal = val; }
+    Double_t GetGeoMeanTotal() { return fGeoMeanTotal; }
+
+    void SetGeoMeanPart(Double_t val) { fGeoMeanPart = val; }
+    Double_t GetGeoMeanPart() { return fGeoMeanPart; }
+
   private:
     NWChannel *fLeft = nullptr; //->
     NWChannel *fRight = nullptr; //->
@@ -48,6 +56,9 @@ class NWBar : public TObject
     Double_t fGeoMean;
     Double_t fTDCDiff;
     Double_t fADCDiff;
+
+    Double_t fGeoMeanTotal;
+    Double_t fGeoMeanPart;
 
   ClassDef(NWBar, 1)
 };

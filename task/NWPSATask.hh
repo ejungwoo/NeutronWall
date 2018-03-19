@@ -31,6 +31,8 @@ class NWPSATask : public KBTask
     bool Exec(TArrayD *tarray);
 
     void SetFit(bool val) { fFitFlag = val; }
+    void SetUseShortRange(bool val) { fUseShortRange = val; }
+
     void SetAlphaLL(Double_t val = 0) { fAlphaLL = (val > 0) * val; }
 
   // Getters
@@ -38,12 +40,12 @@ class NWPSATask : public KBTask
             TH1D *H() { return CopyOfHistogram(); }   ///< Get copy of histogram of fData
     TGraphErrors *G() { return CopyOfFitSample(); }   ///< Get copy of TGraphErrors of sample points
              TF1 *F() { return CopyOfFitFunction(); } ///< Get copy of fitted function
-         TLegend *L() { return CopyOfLegend(); }      ///< Get copy of fitted function
+         TLegend *L(Option_t *opt = "hgf") { return MakeLegend(opt); } ///< make and get legend
 
             TH1D *CopyOfHistogram(TString name = ""); ///< Get copy of histogram of fData
     TGraphErrors *CopyOfFitSample();                  ///< Get copy of TGraphErrors of sample points
              TF1 *CopyOfFitFunction();                ///< Get copy of fitted function
-         TLegend *CopyOfLegend();                     ///< Get legend of basic and fit information
+         TLegend *MakeLegend(Option_t *opt);        ///< Get legend of basic and fit information
 
        Int_t GetN()        { return fN; }        ///< Get size of data
     Double_t *GetData()    { return fData; }     ///< Get data[]
@@ -57,7 +59,10 @@ class NWPSATask : public KBTask
        Int_t GetPosMax() { return fPosMax; } ///< Get position at max value
     Double_t GetMax()    { return fMax; }    ///< Get max value
 
-    Double_t GetFitAmplitude()  { return exp(-2/7.) * fFitFunction -> GetParameter(0); }
+    Double_t GetTotalSum() { return fTotalSum; } ///< Get total sum of all ADC values
+    Double_t GetPartSum()  { return fPartSum; }  ///< Get part  sum of all ADC values
+
+    Double_t GetFitAmplitude()  { return fFitFunction -> GetParameter(0); }
     Double_t GetFitPosition()   { return fFitFunction -> GetParameter(1); }
     Double_t GetAlphaLL()       { return fAlphaLL; }
     Double_t GetFitAlpha()      { return fFitFunction -> GetParameter(2); }
@@ -81,6 +86,7 @@ class NWPSATask : public KBTask
 
   private:
     bool fFitFlag = true;
+    bool fUseShortRange = false;
 
     Double_t fNormAmp;
 
@@ -96,6 +102,9 @@ class NWPSATask : public KBTask
 
     Int_t fPosMax; ///< position at max value
     Double_t fMax; ///< max value (-pedestal after the PedestalSubtraction)
+
+    Double_t fTotalSum; ///< 
+    Double_t fPartSum; ///< 
 
     TGraphErrors *fSample; ///< Sample to fit
     TF1 *fFitFunction; ///< TF1 of PulseFunction()

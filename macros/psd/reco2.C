@@ -1,8 +1,9 @@
 void reco2()
 {
   auto run = new KBRun();
-  run -> SetInputFile("/Users/ejungwoo/KEBI/data/run0133.w0_b18.root");
-  run -> SetOutputFile("/Users/ejungwoo/KEBI/data/run0133.w0_b18_fit.root");
+  run -> SetInputFile("/Users/ejungwoo/KEBI/data/run0133.choose.root");
+  run -> SetInputTreeName("a");
+  run -> SetOutputFile("/Users/ejungwoo/KEBI/data/run0133.a.root");
   run -> AddParameterFile("nscl.par");
   run -> SetTag("psa");
 

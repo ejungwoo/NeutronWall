@@ -63,7 +63,6 @@ Double_t NWPSATask::PulseFunction(Double_t *tb, Double_t *par)
       auto f4_norm = x4*atan(x4) - 0.5 * log(x4*x4+1);
 
       norm = fNormAmp*((f2_norm-f1_norm)-(f4_norm-f3_norm));
-//    norm = (f2_norm-f1_norm)-(f4_norm-f3_norm);
     }
   }
 
@@ -185,6 +184,14 @@ bool NWPSATask::ThresholdHandling()
   for (auto pos = 0; pos < fPosBeforeThreshold; ++pos)
     fData[pos] = 0;
 
+  fTotalSum = 0;
+  for (auto pos = 0; pos < fN; ++pos)
+    fTotalSum += fData[pos];
+
+  fPartSum = 0;
+  for (auto pos = 0; pos < fPosBeforeThreshold+30; ++pos)
+    fPartSum += fData[pos];
+
   return true;
 }
 
@@ -200,8 +207,14 @@ bool NWPSATask::CollectSample()
   if (yerror < 0.5)
     yerror = 0.5;
 
-  Int_t    stepRegions[]  = {4,9,25,kNWPSA_NDATA_MAX};
-  Double_t scaleRegions[] = {1., 8.,4.,2.};
+  Int_t    stepRegions[]  = {4,3,6,25,kNWPSA_NDATA_MAX};
+  Double_t scaleRegions[] = {1.,2.,8.,4.,2.};
+
+  if (fUseShortRange) {
+    stepRegions[2] = 0;
+    stepRegions[3] = 0;
+    stepRegions[4] = 0;
+  }
 
   auto pos = 0;
   for (pos = posStart; pos <= fPosBeforeThreshold; ++pos) {
@@ -393,9 +406,12 @@ TF1 *NWPSATask::CopyOfFitFunction()
   return f1;
 }
 
-TLegend *NWPSATask::CopyOfLegend()
+TLegend *NWPSATask::MakeLegend(Option_t *opt)
 {
-  auto l = new TLegend(0.5, 0.4, 0.945, 0.88);
+  TString opts = TString(opt);
+  opts.ToLower();
+
+  auto l = new TLegend(0.5, 0.4, 0.90, 0.88);
 
   l -> SetFillStyle(0);
   l -> SetBorderSize(0);
@@ -405,19 +421,28 @@ TLegend *NWPSATask::CopyOfLegend()
   auto lx = new TLine(0,0,0,0); lx -> SetLineStyle(7);
   auto lf = new TLine(0,0,0,0); lf -> SetLineColor(kRed);
 
-  if (fH1 != nullptr)
-    l -> AddEntry(fH1, "Data", "l");
-  l -> AddEntry((TObject*)0, Form("pedestal: %.1f", fPedestal), "");
-  l -> AddEntry((TObject*)0, Form("pos/adc-thr.: %d / %.1f", fPosBeforeThreshold, fThreshold), "");
-  l -> AddEntry((TObject*)0, Form("pos/adc-max.: %d / %.1f", fPosMax, fNormAmp*fMax), "");
-  l -> AddEntry(fG1, "Sample points for fit", "pl");
-  l -> AddEntry(fF1, "Fit line", "l");
-  l -> AddEntry((TObject*)0, Form("Amplitude: %.1f", fFitFunction -> GetParameter(0)), "");
-  l -> AddEntry((TObject*)0, Form("Position: %.1f",  fFitFunction -> GetParameter(1)), "");
-  l -> AddEntry((TObject*)0, Form("#alpha: %.1f",    fFitFunction -> GetParameter(2)), "");
-  l -> AddEntry((TObject*)0, Form("#alpha_0: %.1f",  fAlphaLL), "");
-//l -> AddEntry((TObject*)0, Form("#Deltatb: %.1f",  fFitFunction -> GetParameter(3)), "");
-  l -> AddEntry((TObject*)0, Form("#chi^{2}: %.1f",  fFitFunction -> GetChisquare()),  "");
+  if (opts.Index("h") >= 0)
+  {
+    if (fH1 != nullptr)
+      l -> AddEntry(fH1, "Data", "l");
+    l -> AddEntry((TObject*)0, Form("pedestal: %.1f", fPedestal), "");
+    l -> AddEntry((TObject*)0, Form("pos/adc-thr.: %d / %.1f", fPosBeforeThreshold, fThreshold), "");
+    l -> AddEntry((TObject*)0, Form("pos/adc-max.: %d / %.1f", fPosMax, fNormAmp*fMax), "");
+  }
+
+  if (opts.Index("g") >= 0)
+    l -> AddEntry(fG1, "Sample points for fit", "pl");
+
+
+  if (opts.Index("f") >= 0) {
+    l -> AddEntry(fF1, "Fit line", "l");
+    l -> AddEntry((TObject*)0, Form("Amplitude: %.1f", fFitFunction -> GetParameter(0)), "");
+    l -> AddEntry((TObject*)0, Form("Position: %.1f",  fFitFunction -> GetParameter(1)), "");
+    l -> AddEntry((TObject*)0, Form("Eff. Tail-L: %.1f", fFitFunction -> GetParameter(2)), "");
+    if (fAlphaLL > 0)
+      l -> AddEntry((TObject*)0, Form("#alpha_0: %.1f",  fAlphaLL), "");
+    l -> AddEntry((TObject*)0, Form("#chi^{2}: %.1f",  fFitFunction -> GetChisquare()),  "");
+  }
 
   return l;
 }
